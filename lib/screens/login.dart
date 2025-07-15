@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:weefizz/services/auth.service.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
-
+  const LoginPage({super.key});
   @override
   State<LoginPage> createState() => _LoginPageState();
+  
 }
 
 class _LoginPageState extends State<LoginPage> {
@@ -13,6 +14,8 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _acceptTerms = false;
+  final AuthService authService = AuthService();
+
 
   @override
   void dispose() {
@@ -343,15 +346,39 @@ class _LoginPageState extends State<LoginPage> {
     print('Google login tapped');
   }
 
-  void _handleLogin() {
-    // Implement login logic
-    print('Login tapped');
-    print('Email: ${_emailController.text}');
-    print('Password: ${_passwordController.text}');
+  Future<void> _handleLogin() async {
+  final email = _emailController.text.trim();
+  final password = _passwordController.text.trim();
+
+  if (email.isEmpty || password.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Veuillez remplir tous les champs')),
+    );
+    return;
   }
 
-  void _handleForgotPassword() {
+  await authService.login(email, password);
+
+  if (authService.connected) {
+    // Success
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Connexion réussie !')),
+    );
+
+    // Optionally, navigate to another page
+    // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomePage()));
+
+  } else {
+    // Failed
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Échec de la connexion')),
+    );
+  }
+}
+
+
+  Future<void> _handleForgotPassword() async {
     // Implement forgot password logic
-    print('Forgot password tapped');
+    print("lol");
   }
 }
