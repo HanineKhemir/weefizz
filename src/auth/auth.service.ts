@@ -1,0 +1,99 @@
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { UserService } from '../user/user.service';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
+import { User } from 'src/user/entities/user.entity';
+import { signupDTO } from './dto/signup.dto';
+
+@Injectable()
+export class AuthService {
+  private accessSecret: string;
+  private refreshSecret: string;
+  private accessExpires: string;
+  private refreshExpires: string;
+
+  constructor(
+    private usersService: UserService,
+    private jwtService: JwtService,
+    private configService: ConfigService,
+  ) {
+    this.accessSecret = this.configService.get<string>('jwt.accessSecret')!;
+    if (!this.accessSecret) {
+      throw new Error('JWT_ACCESS_SECRET is not set');
+    }
+
+    this.refreshSecret = this.configService.get<string>('jwt.refreshSecret')!;
+    if (!this.refreshSecret) {
+      throw new Error('JWT_ACCESS_SECRET is not set');
+    }
+
+    this.accessExpires = this.configService.get<string>('jwt.accessExpires') || '15m';
+    this.refreshExpires = this.configService.get<string>('jwt.refreshExpires') || '7d';
+  }
+
+  async validateUser(email: string, password: string): Promise<any> {
+    const user = await this.usersService.findByEmail(email);
+    if (user && await bcrypt.compare(password, user.password)) {
+      const { password, ...result } = user;
+      return result;
+    }
+    return null;
+  }
+
+  async login(user: any) {
+    const payload = { username: user.username, sub: user.id };
+
+    const accessToken = this.jwtService.sign(payload, {
+      secret: this.accessSecret,
+      expiresIn: this.accessExpires,
+    });
+
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: this.refreshSecret,
+      expiresIn: this.refreshExpires,
+    });
+
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    };
+  }
+  async signup(signupDTO: signupDTO) {
+    const existingUser = await this.usersService.findByEmail(signupDTO.email);
+    if (existingUser) {
+      throw new UnauthorizedException('Email already in use');
+    }
+    const hashedPassword = await bcrypt.hash(signupDTO.password, 10);
+    const user = await this.usersService.create({
+      email : signupDTO.email,
+      username: signupDTO.username,
+      isEmailVerified : false,
+      password: hashedPassword,
+    } as User);
+    if(!user) {
+      throw new UnauthorizedException('User registration failed');
+      }
+    }
+  async refresh(refreshToken: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: this.refreshSecret,
+      });
+
+      const newAccessToken = this.jwtService.sign(
+        { username: payload.username, sub: payload.sub },
+        {
+          secret: this.accessSecret,
+          expiresIn: this.accessExpires,
+        },
+      );
+
+      return {
+        access_token: newAccessToken,
+      };
+    } catch (e) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+  }
+}
