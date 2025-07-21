@@ -7,6 +7,7 @@ import { typeOrmConfig } from './config/typeorm.config';
 import { AuthModule } from './auth/auth.module';
 import { User } from './auth/decorator/user.decorator';
 import { UserModule } from './user/user.module';
+import { FabricModule } from './fabric/fabric.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { UserModule } from './user/user.module';
       useFactory: typeOrmConfig,
     }),
     AuthModule,
-    UserModule
+    UserModule,
+    FabricModule
   ],
 })
 export class AppModule {}

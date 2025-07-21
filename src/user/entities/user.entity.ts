@@ -1,4 +1,5 @@
-import { PrimaryGeneratedColumn, Column, DeleteDateColumn, Entity } from "typeorm";
+import { Fabric } from "src/fabric/fabric.entity";
+import { PrimaryGeneratedColumn, Column, DeleteDateColumn, Entity, OneToMany } from "typeorm";
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
@@ -18,5 +19,9 @@ export class User {
 
   @Column({ default: false }) 
   isEmailVerified: boolean;
+
+  @Column({ default: false })
+  @OneToMany(() => Fabric, fabric => fabric.user)
+  fabrics?: Fabric[];
 
 }
