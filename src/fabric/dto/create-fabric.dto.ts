@@ -11,8 +11,8 @@ export class CreateFabricDto {
 
   @IsString()
   @IsNotEmpty()
-  type: string; // Assuming type is a string, adjust as necessary
-
+  type: string; 
+  
   @IsUUID()
-  userId: string; // user represented by their ID
+  userId: string; 
 }
