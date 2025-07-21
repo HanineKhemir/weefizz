@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  final String baseUrl = 'http://10.0.2.2:3000';
+  static final  String baseUrl = 'http://10.0.2.2:3000';
 
   String? accessToken;
   String? refreshToken;
@@ -45,4 +45,24 @@ class AuthService {
       print('Login failed: ${response.statusCode}, ${response.body}');
     }
   }
+  static Future<bool> signup(String email, String password, String username) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/signup'), // Adjust this endpoint to your backend
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password, 'username': username}),
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return true;
+      } else {
+        print('Signup failed: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Signup error: $e');
+      return false;
+    }
+  }
 }
+

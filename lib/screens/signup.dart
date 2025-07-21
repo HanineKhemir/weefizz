@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:weefizz/services/auth.service.dart';
-import 'signup.dart';
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+
+class SignupPage extends StatefulWidget {
+  const SignupPage({super.key});
+
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<SignupPage> createState() => _SignupPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _SignupPageState extends State<SignupPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _usernameController = TextEditingController();
   bool _obscurePassword = true;
   bool _acceptTerms = false;
-  final AuthService authService = AuthService();
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _usernameController.dispose();
     super.dispose();
   }
 
@@ -38,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
               Center(
                 child: Column(
                   children: [
-                    // Placeholder logo - replace with your actual logo
+                    // Logo container matching login page
                     Container(
                       width: 60,
                       height: 60,
@@ -89,7 +91,7 @@ class _LoginPageState extends State<LoginPage> {
 
               // Title
               const Text(
-                'Connectez-vous à votre compte',
+                'Créez votre compte',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -105,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   Expanded(
                     child: _buildSocialButton(
-                      onTap: () => _handleAppleLogin(),
+                      onTap: () => _handleAppleSignup(),
                       child: SvgPicture.asset(
                         'assets/apple.svg',
                         height: 24,
@@ -116,7 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: _buildSocialButton(
-                      onTap: () => _handleGoogleLogin(),
+                      onTap: () => _handleGoogleSignup(),
                       child: SvgPicture.asset(
                         'assets/google.svg',
                         height: 24,
@@ -145,6 +147,36 @@ class _LoginPageState extends State<LoginPage> {
               ),
 
               const SizedBox(height: 24),
+
+              // Username Field
+              const Text(
+                'Nom d\'utilisateur',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF1A237E),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _usernameController,
+                decoration: InputDecoration(
+                  hintText: 'david123',
+                  hintStyle: const TextStyle(color: Color(0xFFBDBDBD)),
+                  filled: true,
+                  fillColor: const Color(0xFFF5F5F5),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
 
               // Email Field
               const Text(
@@ -219,21 +251,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
 
-              const SizedBox(height: 12),
-
-              // Forgot Password
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () => _handleForgotPassword(),
-                  child: const Text(
-                    'Forgot your password?',
-                    style: TextStyle(color: Color(0xFF757575), fontSize: 14),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
 
               // Terms Checkbox
               Row(
@@ -269,11 +287,11 @@ class _LoginPageState extends State<LoginPage> {
 
               const SizedBox(height: 24),
 
-              // Login Button
+              // Signup Button
               SizedBox(
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: _acceptTerms ? () => _handleLogin() : null,
+                  onPressed: _acceptTerms ? () => _handleSignup() : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF5C6BC0),
                     disabledBackgroundColor: const Color(0xFFE0E0E0),
@@ -283,7 +301,7 @@ class _LoginPageState extends State<LoginPage> {
                     elevation: 0,
                   ),
                   child: const Text(
-                    'Connexion',
+                    'Créer un compte',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -292,15 +310,15 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 16),
+
               TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SignupPage()),
-                  );
-                },
-                child: const Text("Don't have an account? Sign up"),
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Vous avez déjà un compte? Connectez-vous',
+                  style: TextStyle(color: Color(0xFF757575)),
+                ),
               ),
 
               const SizedBox(height: 24),
@@ -340,47 +358,40 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _handleAppleLogin() {
-    // Implement Apple login logic
-    print('Apple login tapped');
+  void _handleAppleSignup() {
+    // Implement Apple signup logic
+    print('Apple signup tapped');
   }
 
-  void _handleGoogleLogin() {
-    // Implement Google login logic
-    print('Google login tapped');
+  void _handleGoogleSignup() {
+    // Implement Google signup logic
+    print('Google signup tapped');
   }
 
-  Future<void> _handleLogin() async {
+  Future<void> _handleSignup() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+    final username = _usernameController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
+    if (email.isEmpty || password.isEmpty || username.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Veuillez remplir tous les champs')),
       );
       return;
     }
 
-    await authService.login(email, password);
-
-    if (authService.connected) {
-      // Success
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Connexion réussie !')));
-
-      // Optionally, navigate to another page
-      // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomePage()));
+    // You'll need to update your AuthService.signup method to accept username
+    final success = await AuthService.signup(email, password, username);
+    
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Compte créé avec succès !')),
+      );
+      Navigator.pop(context); // Return to login on success
     } else {
-      // Failed
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Échec de la connexion')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Échec de la création du compte')),
+      );
     }
-  }
-
-  Future<void> _handleForgotPassword() async {
-    // Implement forgot password logic
-    print("lol");
   }
 }
